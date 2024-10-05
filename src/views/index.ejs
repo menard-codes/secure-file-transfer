@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+
+    <style>
+        .custom-fit-width {
+            width: fit-content;
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    <h1>File Upload</h1>
+    <form method="post" action="/files/upload" enctype="multipart/form-data">
+        <div id="file-upload" class="file is-boxed has-name is-large custom-fit-width">
+            <label class="file-label">
+              <input class="file-input" type="file" name="attachment" id="fileElem" required />
+              <span class="file-cta">
+                <span class="file-icon">
+                  <i class="fas fa-upload"></i>
+                </span>
+                <span class="file-label"> Upload a File </span>
+              </span>
+              <span class="file-name" id="file-name"> No file chosen </span>
+            </label>
+        </div>
+        <div>
+            <input
+                class="input"
+                type="text"
+                placeholder="Passphrase"
+                name="passphrase"
+                autocomplete="off"
+                required
+            />
+            
+            <% const expirations = ['7 Days', '3 Days', '24 Hours', '12 Hours', '4 Hours', '1 Hour', '5 Minutes'] %>
+            <div class="select">
+                <select name="expiration" required>
+                    <% for (let exp of expirations) { %>
+                        <option
+                            value="<%= exp %>"
+                        >
+                            Expires in <%= exp %>
+                        </option>
+                    <% } %>
+                </select>
+            </div>
+        </div>
+    
+        <button type="submit" class="button is-primary">Create a secret link</button>
+    
+        <p>* A secret link only works once and then disappears forever.</p>
+    </form>
+
+    <script>
+        let fileInput = document.getElementById('fileElem');
+        let fileName = document.getElementById('file-name');
+        let fileUploadBox = document.getElementById('file-upload');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileUploadBox.addEventListener(eventName, preventDefaults, false);
+        });
+
+        fileUploadBox.addEventListener('mouseover', () => {
+            if (!fileUploadBox.classList.contains('is-info')) {
+                highlight();
+            }
+        });
+
+        fileUploadBox.addEventListener('mouseleave', () => {
+            if (fileUploadBox.classList.contains('is-info')) {
+                unhighlight();
+            }
+        })
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileUploadBox.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileUploadBox.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            fileUploadBox.classList.add('is-info');
+        }
+
+        function unhighlight() {
+            fileUploadBox.classList.remove('is-info');
+        }
+
+        fileUploadBox.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                fileName.textContent = files[0].name;
+                fileInput.files = files;
+            }
+        }
+
+        fileInput.addEventListener('change', function(e) {
+            handleFiles(this.files);
+        });
+    </script>
+</body>
+</html>
