@@ -13,16 +13,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/multer": "^1.4.12",
+    "@prisma/client": "5.20.0",
+    "bullmq": "^5.15.0",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.21.0",
     "multer": "1.4.5-lts.1",
-    "pinata": "^1.5.0"
+    "pinata": "^1.5.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "@types/multer": "^1.4.12",
     "@types/node": "^22.7.4",
+    "prisma": "^5.20.0",
     "tsx": "^4.19.1",
     "typescript": "^5.6.2"
   }

@@ -24,14 +24,15 @@ export async function getFile(cid: string) {
             cid,
             expires: 1800
         });
+        return {data, signedUrl}
     } catch (error) {
         
     }
 }
 
-export async function deleteFile(cid: string) {
+export async function deleteFile(fileId: string) {
     try {
-        const deleted = await pinata.files.delete([cid]);
+        const deleted = await pinata.files.delete([fileId]);
         return deleted;
     } catch (error) {
         console.error(error);

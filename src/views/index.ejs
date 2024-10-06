@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <%- include('partials/head') %>
+    <title>Secure File Transfer</title>
 
     <style>
         .custom-fit-width {
@@ -35,7 +36,7 @@
                 required
             />
             
-            <% const expirations = ['7 Days', '3 Days', '24 Hours', '12 Hours', '4 Hours', '1 Hour', '5 Minutes'] %>
+            <% const expirations = ['7 Days', '3 Days', '24 Hours', '12 Hours', '4 Hours', '1 Hour', '5 Minutes', '1 Minute'] %>
             <div class="select">
                 <select name="expiration" required>
                     <% for (let exp of expirations) { %>

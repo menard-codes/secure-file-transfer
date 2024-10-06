@@ -1,3 +1,6 @@
 .env
 .DS_store
 node_modules
+# pnpm
+pnpm-debug.log
+.pnpm-store/
