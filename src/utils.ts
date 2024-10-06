@@ -24,9 +24,6 @@ export function getExpISOString(expStr: ExpirationEnum) {
         case '5 Minutes':
             now.setMinutes(now.getMinutes() + 5);
             break;
-        case '1 Minute':
-            now.setMinutes(now.getMinutes() + 1);
-            break;
     }
 
     return now.toISOString();

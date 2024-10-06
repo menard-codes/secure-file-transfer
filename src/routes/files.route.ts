@@ -19,11 +19,13 @@ filesRouter.post('/upload', upload.single('attachment'), async (req, res) => {
     // 1. Check file attachment and upload metadata from request
     const parsedFileUpload = FileUploadSchema.safeParse(data);
     if (parsedFileUpload.error) {
+        // TODO: Better error handling
         console.log(parsedFileUpload.error);
         res.statusCode = 400;
         res.send('Bad Request');
     }
     if (!attachment) {
+        // TODO: Better error handling
         res.statusCode = 400;
         res.json('File upload required');
     }
@@ -36,7 +38,8 @@ filesRouter.post('/upload', upload.single('attachment'), async (req, res) => {
     if (!uploadedFile) {
         // TODO: Something went wrong while uploading the file
         res.statusCode = 500;
-        res.send(uploadedFile);
+        console.log(uploadedFile);
+        res.send('Something went wrong while uploading the file');
     }
 
     // 3. Save a record in the database about the uploaded file
@@ -51,7 +54,7 @@ filesRouter.post('/upload', upload.single('attachment'), async (req, res) => {
             }
         });
 
-        // * Add file deletion job to trigger on selected time
+        // 4. Add file deletion job to trigger on selected time
         scheduleFileDeletion(uploadedFile!.id, uploadedFileRecord.expiration)
     
         res.redirect(`/files/share/${uploadedFile!.id}`);
