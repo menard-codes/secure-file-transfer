@@ -4,3 +4,7 @@ node_modules
 # pnpm
 pnpm-debug.log
 .pnpm-store/
+
+*.db
+*.sqlite
+*.sqlite3

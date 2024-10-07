@@ -7,7 +7,7 @@ dotenv.config();
 
 interface FileDeleteJob {
     fileId: string;
-    cid: string;
+    shareId: string;
 }
 
 const connection = {
@@ -17,19 +17,26 @@ const connection = {
 
 const fileDeleteQueue = new Queue('fileDelete', { connection });
 
-export async function scheduleFileDeletion(fileId: string, expiration: Date) {
+export async function scheduleFileDeletion(fileId: FileDeleteJob['fileId'], shareId: FileDeleteJob['shareId'], expiration: Date) {
     const delay = Number(expiration) - Number(new Date());
-    await fileDeleteQueue.add('delete', { fileId }, { delay });
+    await fileDeleteQueue.add('delete', { fileId, shareId }, { delay });
 }
 
 const worker = new Worker('fileDelete', async (job: Job<FileDeleteJob>) => {
-    const { fileId } = job.data;
+    const { fileId, shareId } = job.data;
 
     try {
         // TODO: Verify that the expiration date on record === expiration on job data
         const deletedFile = await deleteFile(fileId);
-        const deletedFileRecord = await prisma.fileUpload.delete({
-            where: { id: fileId }
+        const deletedFileRecord = await prisma.$transaction(async (tx) => {
+            const deletedShareFile = await tx.share.delete({
+                where: { id: shareId },
+            });
+            return tx.view.delete({
+                where: {
+                    id: deletedShareFile.viewId
+                }
+            });
         });
         // TODO: Logger
         console.log(deletedFile, deletedFileRecord);

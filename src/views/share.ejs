@@ -5,7 +5,13 @@
 </head>
 <body>
     <%- include('partials/navbar.ejs') %>
-    <h1>Hello World</h1>
-    <p>ID: <%= id %></p>
+    <h1>Get share link</h1>
+    <p>Share link: <span id="share-link-prefix"></span><%= shareLinkRoute %></p>
+    <p>Expiration: <em><%= expiration %></em></p>
+
+    <script>
+        const shareLinkPrefix = document.getElementById('share-link-prefix');
+        shareLinkPrefix.textContent = location.origin;
+    </script>
 </body>
 </html>

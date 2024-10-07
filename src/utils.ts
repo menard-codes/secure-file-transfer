@@ -2,29 +2,36 @@ import { ExpirationEnum } from "./schemas";
 
 export function getExpISOString(expStr: ExpirationEnum) {
     const now = new Date();
+    const msSecond = 1_000;
+    const msMinute = msSecond * 60;
+    const msHour = msMinute * 60;
+    const msDay = msHour * 24;
+    let msExpiration = now.getTime();
     switch (expStr) {
         case '7 Days':
-            now.setDate(now.getDate() + 7);
+            msExpiration += msDay * 7;
             break;
         case '3 Days':
-            now.setDate(now.getDate() + 3);
+            msExpiration += msDay * 3;
             break;
         case '24 Hours':
-            now.setHours(now.getHours() + 24);
+            msExpiration += msHour * 24;
             break;
         case '12 Hours':
-            now.setHours(now.getHours() + 12);
+            msExpiration += msHour * 12;
             break;
         case '4 Hours':
-            now.setHours(now.getHours() + 4);
+            msExpiration += msHour * 4;
             break;
         case '1 Hour':
-            now.setHours(now.getHours() + 1);
+            msExpiration += msHour;
             break;
         case '5 Minutes':
-            now.setMinutes(now.getMinutes() + 5);
+            msExpiration += msMinute * 5;
             break;
+        default:
+            throw new Error('Invalid expiration string');
     }
-
-    return now.toISOString();
+    const expirationDate = new Date(msExpiration);
+    return expirationDate.toISOString();
 }

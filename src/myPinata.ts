@@ -17,18 +17,19 @@ export async function uploadFile(file: FileObject) {
     }
 }
 
-export async function getFile(cid: string) {
+export async function getFileUrl(cid: string, expires: number) {
     try {
-        const data = await pinata.gateways.get(cid);
         const signedUrl = await pinata.gateways.createSignedURL({
             cid,
-            expires: 1800
+            expires
         });
-        return {data, signedUrl}
+        return signedUrl;
     } catch (error) {
-        
+        // TODO: Error handling
     }
 }
+
+
 
 export async function deleteFile(fileId: string) {
     try {
