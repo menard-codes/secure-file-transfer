@@ -4,35 +4,72 @@ import dotenv from "dotenv";
 import { filesRouter } from "./routes/files.route";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { exec } from 'child_process';
+import util from 'util';
+import prisma from './db';
+
+const execAsync = util.promisify(exec);
 
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+async function applyMigrations() {
+  console.log('Checking database connection...');
+  try {
+    await prisma.$connect();
+    console.log('Database connection successful.');
 
-// Register view engine (ejs)
-app.set('view engine', 'ejs');
-app.set('views', join(dirname(fileURLToPath(import.meta.url)), '/views'));
+    console.log('Applying database migrations...');
+    const { stdout, stderr } = await execAsync('npx prisma migrate deploy');
+    
+    if (stderr) {
+      console.error('Migration error:', stderr);
+    } else {
+      console.log('Migration output:', stdout);
+      console.log('Migrations applied successfully.');
+    }
+  } catch (error) {
+    console.error('Failed to apply migrations:', error);
+    process.exit(1);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
 
-// Serving assets
-app.use(
+async function startServer() {
+  await applyMigrations();
+
+  const app = express();
+  const PORT = process.env.PORT || 3000;
+
+  // Register view engine (ejs)
+  app.set('view engine', 'ejs');
+  app.set('views', join(dirname(fileURLToPath(import.meta.url)), '/views'));
+
+  // Serving assets
+  app.use(
     express.static(join(
-        dirname(fileURLToPath(import.meta.url)),
-        '/public'
+      dirname(fileURLToPath(import.meta.url)),
+      '/public'
     ))
-);
+  );
 
-// parsing
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+  // parsing
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json());
 
-app.use('/files', filesRouter);
+  app.use('/files', filesRouter);
 
-app.get('/', async (req: Request, res: Response) => {
+  app.get('/', async (req: Request, res: Response) => {
     res.render('index');
+  });
+
+  // TODO: 404 page
+  app.use((req, res) => {res.status(404).send('Not Found')});
+
+  app.listen(PORT, () => console.log(`Server listening to port ${PORT}`));
+}
+
+startServer().catch(error => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
 });
-
-// TODO: 404 page
-app.use((req, res) => {res.status(404).send('Not Found')});
-
-app.listen(PORT, () => console.log(`Server listening to port ${PORT}`));

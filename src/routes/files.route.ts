@@ -5,7 +5,7 @@ import { uploadFile } from "~/myPinata";
 import { FileUploadSchema } from "~/schemas";
 import { getExpISOString } from "~/utils";
 import bcrypt from 'bcrypt';
-import { SALT_ROUNDS } from "~/contants";
+import { SALT_ROUNDS } from "~/constants";
 
 export const filesRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
