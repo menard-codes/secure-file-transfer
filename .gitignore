@@ -8,3 +8,6 @@ pnpm-debug.log
 *.db
 *.sqlite
 *.sqlite3
+prisma/*.db
+prisma/*.sqlite
+prisma/*.sqlite3
