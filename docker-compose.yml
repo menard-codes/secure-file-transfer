@@ -9,9 +9,6 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - REDIS_HOST=${REDIS_HOST:-redis}
       - DATABASE_URL=${DATABASE_URL}
-    volumes:
-      - ./src:/app/src
-      - ./prisma:/app/prisma
     develop:
       watch:
         - path: ./src
