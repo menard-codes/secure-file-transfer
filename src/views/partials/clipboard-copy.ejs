@@ -1,0 +1,34 @@
+<div class="field">
+    <label class="label" for="clipboardInput"><%= label %></label>
+    <div class="control has-icons-right">
+      <input class="input" type="text" id="clipboardInput" value="<%= shareLinkRoute %>" readonly>
+      <span class="icon is-small is-right" style="pointer-events: all; cursor: pointer;" id="copyButton">
+        <i class="fas fa-copy"></i>
+      </span>
+    </div>
+  </div>
+  
+  <script>
+    const clipboardInput = document.getElementById('clipboardInput');
+    clipboardInput.value = location.origin + clipboardInput.value;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const copyButton = document.querySelector('#copyButton');
+      const clipboardInput = document.querySelector('#clipboardInput');
+  
+      copyButton.addEventListener('click', function() {
+        clipboardInput.select();
+        navigator.clipboard.writeText(clipboardInput.value).then(() => {
+          // Optional: Provide visual feedback
+          this.querySelector('i').classList.remove('fa-copy');
+          this.querySelector('i').classList.add('fa-check');
+          setTimeout(() => {
+            this.querySelector('i').classList.remove('fa-check');
+            this.querySelector('i').classList.add('fa-copy');
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy text: ', err);
+        });
+      });
+    });
+</script>

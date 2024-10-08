@@ -1,0 +1,27 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Share {
+  id         String   @id @default(cuid())
+  expiration DateTime
+  viewId     String   @unique
+
+  view View @relation(fields: [viewId], references: [id])
+}
+
+model View {
+  id               String @id @default(cuid())
+  hashedPassphrase String
+  fileId           String
+
+  share Share?
+}

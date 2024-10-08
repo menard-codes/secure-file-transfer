@@ -1,0 +1,35 @@
+services:
+  app:
+    build:
+      context: .
+      target: development
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - DATABASE_URL=${DATABASE_URL}
+    develop:
+      watch:
+        - path: ./src
+          action: sync
+          target: /app/src
+        - path: ./prisma
+          action: sync+restart
+          target: /app/prisma
+        - path: package.json
+          action: rebuild
+        - path: pnpm-lock.yaml
+          action: rebuild
+    depends_on:
+      - redis
+  
+  redis:
+    image: redis:alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head.ejs') %>
+</head>
+<body>
+    <%- include('partials/navbar.ejs') %>
+    <h1>Access File</h1>
+    <form method="post" action="/view/<%= viewId %>">
+        <label>
+            Passphrase
+            <input name="passphrase" />
+        </label>
+        <button>Submit</button>
+    </form>
+</body>
+</html>
