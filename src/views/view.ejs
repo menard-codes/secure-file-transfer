@@ -2,16 +2,38 @@
 <html lang="en">
 <head>
     <%- include('partials/head.ejs') %>
+    <title>Secure File Transfer - View</title>
+
+    <style>
+        form button[type=submit] {
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
     <%- include('partials/navbar.ejs') %>
-    <h1>Access File</h1>
-    <form method="post" action="/view/<%= viewId %>">
-        <label>
-            Passphrase
-            <input name="passphrase" />
-        </label>
-        <button>Submit</button>
-    </form>
+    <main class="container is-max-tablet p-3">
+        <section class="my-6">
+            <h1 class="title is-spaced">View Shared File</h1>
+            <p class="subtitle">Enter the passphrase to view the file. This will be valid until <strong><%= expiration %></strong>.</p>
+        </section>
+
+        <div class="box">
+            <form id="file-access-form" method="post" action="/files/view/<%= viewId %>">
+                <%- include('partials/password-input.ejs', { helpText: 'Enter File Passphrase' }) %>
+    
+                <button type="submit" id="submit-btn" class="button is-primary">View File</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Set submit button to loading `onsubmit`
+        const fileUploadForm = document.getElementById('file-access-form');
+        fileUploadForm.onsubmit = () => {
+            const submitBtn = fileUploadForm.querySelector('button[type=submit]');
+            submitBtn.classList.add('is-loading');
+        }
+    </script>
 </body>
 </html>

@@ -17,9 +17,19 @@ const connection = {
 
 const fileDeleteQueue = new Queue('fileDelete', { connection });
 
-export async function scheduleFileDeletion(fileId: FileDeleteJob['fileId'], shareId: FileDeleteJob['shareId'], expiration: Date) {
-    const delay = Number(expiration) - Number(new Date());
-    await fileDeleteQueue.add('delete', { fileId, shareId }, { delay });
+export async function scheduleFileDeletion(fileId: string, shareId: string, expiration: Date) {
+    const now = new Date();
+    const delay = Math.max(0, expiration.getTime() - now.getTime());
+    
+    console.log(`Scheduling deletion for file ${fileId} with delay: ${delay} ms`);
+    console.log(`Current time: ${now.toISOString()}`);
+    console.log(`Scheduled deletion time: ${new Date(now.getTime() + delay).toISOString()}`);
+    
+    const job = await fileDeleteQueue.add('delete', { fileId, shareId }, { delay });
+    
+    console.log(`Job created with ID: ${job.id}`);
+    
+    return job;
 }
 
 const worker = new Worker('fileDelete', async (job: Job<FileDeleteJob>) => {
@@ -39,7 +49,7 @@ const worker = new Worker('fileDelete', async (job: Job<FileDeleteJob>) => {
             });
         });
         // TODO: Logger
-        console.log(deletedFile, deletedFileRecord);
+        console.log('DELETED', deletedFile, deletedFileRecord);
     } catch (error) {
         console.error(error);
     }

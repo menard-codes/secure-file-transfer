@@ -1,25 +1,102 @@
 import { Router } from "express";
 import multer from "multer";
 import { scheduleFileDeletion } from "~/background-tasks";
-import { uploadFile } from "~/myPinata";
+import { getFile, getFileUrl, uploadFile } from "~/myPinata";
 import { FileUploadSchema } from "~/schemas";
 import { getExpISOString } from "~/utils";
 import bcrypt from 'bcrypt';
 import { SALT_ROUNDS } from "~/constants";
+import { z } from "zod";
 
 export const filesRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 filesRouter.get('/view/:id', async (req, res) => {
     const { id } = req.params;
-    res.render('view', { viewId: id });
+    const viewFile = await prisma.view.findUnique({
+        where: { id },
+        select: {
+            share: {
+                select: {
+                    expiration: true
+                }
+            }
+        }
+    });
+
+    if (!viewFile) {
+        res.statusCode = 404;
+        res.send('Not Found');
+        return;
+    }
+
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        timeZoneName: 'short'
+    });
+    const expiration = formatter.format(viewFile?.share?.expiration);
+    res.render('view', { viewId: id, expiration });
 });
 
 filesRouter.post('/view/:id', async (req, res) => {
-    // TODO: POST handler
-    // * Reference: https://www.freecodecamp.org/news/how-to-hash-passwords-with-bcrypt-in-nodejs/#heading-how-to-verify-passwords-with-bcrypt
-    // * Reference: https://www.npmjs.com/package/bcrypt
-})
+    const { id } = req.params;
+    const data = req.body;
+
+    // 1. Check if the uploaded file record still exists
+    const viewFile = await prisma.view.findUnique({
+        where: { id },
+        include: {
+            share: {
+                select: {
+                    expiration: true
+                }
+            }
+        }
+    });
+
+    if (!viewFile || !viewFile.share) {
+        res.statusCode = 404;
+        res.send('Not Found');
+        return;
+    }
+
+    // 2. check passphrase
+    const parsedData = z.object({ passphrase: z.string() }).safeParse(data);
+
+    // 2.1 no passphrase
+    if (parsedData.error) {
+        res.statusCode = 400;
+        res.send('passphrase required');
+        return;
+    }
+
+    const enteredPassphrase = parsedData.data.passphrase;
+    const storedHashedPassphrase = viewFile.hashedPassphrase;
+    const isSame = await bcrypt.compare(enteredPassphrase, storedHashedPassphrase);
+    
+    // 2.2 Incorrect passphrase
+    if (!isSame) {
+        res.statusCode = 401;
+        res.send('Invalid passphrase');
+        return;
+    }
+
+    // 3. Authorized request, return the file
+    const urlExpiration = 300; // URL Expiration is set to 5 minutes
+    const fileUrl = await getFileUrl(viewFile.cid, urlExpiration);
+    if (!fileUrl) {
+        res.statusCode = 404;
+        res.send('File not found');
+        return;
+    }
+    // TODO: Autodelete file
+    res.redirect(fileUrl);
+});
 
 filesRouter.get('/share/:id', async (req, res) => {
     const { id } = req.params;
@@ -88,7 +165,7 @@ filesRouter.post('/upload', upload.single('attachment'), async (req, res) => {
         const hashedPassphrase = await bcrypt.hash(parsedFileUpload.data.passphrase, salt);
         return tx.view.create({
             data: {
-                fileId: uploadedFile.id,
+                cid: uploadedFile.cid,
                 hashedPassphrase,
                 share: {
                     create: {
@@ -101,6 +178,8 @@ filesRouter.post('/upload', upload.single('attachment'), async (req, res) => {
             }
         });
     });
+    
+    console.log(parsedFileUpload.data.expiration, expiration)
 
     // 4. Add file deletion job to trigger on selected time
     scheduleFileDeletion(uploadedFile.id, uploadedFileRecord.share!.id, uploadedFileRecord.share!.expiration)
