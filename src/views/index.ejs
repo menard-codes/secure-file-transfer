@@ -26,9 +26,9 @@
 </head>
 <body>
     <%- include('partials/navbar') %>
-    <main class="container is-fullhd p-3">
+    <main class="container is-max-tablet p-3">
         <section class="my-6">
-            <h1 class="title">Send Files Securely</h1>
+            <h1 class="title is-spaced">Send Files Securely</h1>
             <p class="subtitle">Keep your sensitive files out from emails and chat logs. Create disposable share file links.</p>
         </section>
 
@@ -50,7 +50,7 @@
 
                 <div class="columns">
                     <div class="column field">
-                        <%- include('partials/password-input.ejs') %>
+                        <%- include('partials/password-input.ejs', { helpText: 'File Passphrase' }) %>
                     </div>
                     
                     <div class="column field">
@@ -69,7 +69,7 @@
                                     <% } %>
                                 </select>
                             </div>
-                            <span class="help">Auto-delete the file and its record after the chosen timeframe</span>
+                            <span class="help">Auto-deletes the file after expiration</span>
                         </div>
                     </div>
                 </div>
