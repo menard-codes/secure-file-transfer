@@ -15,14 +15,17 @@
     <main class="container is-max-tablet p-3">
         <section class="my-6">
             <h1 class="title is-spaced">View Shared File</h1>
-            <p class="subtitle">Enter the passphrase to view the file. This will be valid until <strong><%= expiration %></strong>.</p>
+            <p class="subtitle">Enter the passphrase to view the file.</p>
+            <div class="notification is-info is-light">
+                This will be valid until <strong><%= expiration %></strong>.
+            </div>
         </section>
 
         <div class="box">
             <form id="file-access-form" method="post" action="/files/view/<%= viewId %>">
                 <%- include('partials/password-input.ejs', { helpText: 'Enter File Passphrase' }) %>
     
-                <button type="submit" id="submit-btn" class="button is-primary">View File</button>
+                <button type="submit" id="submit-btn" class="button is-info">View File</button>
             </form>
         </div>
     </main>

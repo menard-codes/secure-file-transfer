@@ -48,31 +48,40 @@
     <!-- FILE DELETION MODAL -->
     <div id="file-delete-modal" class="modal">
         <div class="modal-background"></div>
-        <div class="modal-card">
-            <header class="modal-card-head">
-                <p class="modal-card-title">Delete the file</p>
-                <button class="delete" aria-label="close"></button>
-            </header>
-            <section class="modal-card-body">
-                <p class="mb-3">Are you sure you want to delete this file?</p>
-                <%- include('partials/password-input.ejs', { helpText: 'Enter Passphrase to proceed with file deletion' }) %>
-            </section>
-            <footer class="modal-card-foot">
-                <div class="buttons is-flex">
-                    <button class="button is-danger">
-                        <span class="icon">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </span>
-                        <span>Delete File</span>
-                    </button>
-                    <button class="button cancel-btn">Cancel</button>
-                </div>
-            </footer>
-        </div>
+        <form id="delete-form" action="/files/share/<%= shareId %>" method="post">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Delete the file</p>
+                    <button class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p class="mb-3">Are you sure you want to delete this file?</p>
+                    <%- include('partials/password-input.ejs', { helpText: 'Enter Passphrase to proceed with file deletion' }) %>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons is-flex">
+                        <button type="submit" class="button is-danger">
+                            <span class="icon">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </span>
+                            <span>Delete File</span>
+                        </button>
+                        <button class="button cancel-btn">Cancel</button>
+                    </div>
+                </footer>
+            </div>
+        </form>
       </div>
     <!-- ###################################################################### -->
 
     <script>
+        // Set submit button to loading `onsubmit`
+        const fileUploadForm = document.getElementById('delete-form');
+        fileUploadForm.onsubmit = () => {
+            const submitBtn = fileUploadForm.querySelector('button[type=submit]');
+            submitBtn.classList.add('is-loading');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             // Functions to open and close a modal
             function openModal($el) {

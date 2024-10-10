@@ -25,11 +25,38 @@ export async function scheduleFileDeletion(fileId: string, shareId: string, expi
     console.log(`Current time: ${now.toISOString()}`);
     console.log(`Scheduled deletion time: ${new Date(now.getTime() + delay).toISOString()}`);
     
-    const job = await fileDeleteQueue.add('delete', { fileId, shareId }, { delay });
+    const job = await fileDeleteQueue.add('delete', { fileId, shareId }, {
+        delay,
+        jobId: `delete-${fileId}-${shareId}`
+    });
     
     console.log(`Job created with ID: ${job.id}`);
     
     return job;
+}
+
+export async function manuallyDeleteFile(fileId: string, shareId: string) {
+    try {
+        // Remove any scheduled deletion job
+        await fileDeleteQueue.remove(`delete-${fileId}-${shareId}`);
+
+        await deleteFile(fileId);
+        await prisma.$transaction(async (tx) => {
+            const share = await tx.share.findUnique({
+                where: { id: shareId }
+            });
+            if (share) {
+                await tx.share.delete({ where: { id: shareId } });
+                await tx.view.delete({
+                    where: { id: share.viewId }
+                });
+            }
+        });
+
+        console.log(`File ${fileId} manually deleted and job removed`);
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 const worker = new Worker('fileDelete', async (job: Job<FileDeleteJob>) => {
@@ -38,18 +65,19 @@ const worker = new Worker('fileDelete', async (job: Job<FileDeleteJob>) => {
     try {
         // TODO: Verify that the expiration date on record === expiration on job data
         const deletedFile = await deleteFile(fileId);
-        const deletedFileRecord = await prisma.$transaction(async (tx) => {
-            const deletedShareFile = await tx.share.delete({
-                where: { id: shareId },
+        await prisma.$transaction(async (tx) => {
+            const share = await tx.share.findUnique({
+                where: { id: shareId }
             });
-            return tx.view.delete({
-                where: {
-                    id: deletedShareFile.viewId
-                }
-            });
+            if (share) {
+                await tx.share.delete({ where: { id: shareId } });
+                await tx.view.delete({
+                    where: { id: share.viewId }
+                });
+            }
         });
         // TODO: Logger
-        console.log('DELETED', deletedFile, deletedFileRecord);
+        console.log('DELETED', deletedFile);
     } catch (error) {
         console.error(error);
     }

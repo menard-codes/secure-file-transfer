@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import { scheduleFileDeletion } from "~/background-tasks";
+import { manuallyDeleteFile, scheduleFileDeletion } from "~/background-tasks";
 import { getFile, getFileUrl, uploadFile } from "~/myPinata";
 import { FileUploadSchema } from "~/schemas";
 import { getExpISOString } from "~/utils";
@@ -122,7 +122,55 @@ filesRouter.get('/share/:id', async (req, res) => {
     });
     const expiration = formatter.format(new Date(fileRecord.expiration));
     
-    res.render('share', { expiration, shareLinkRoute });
+    res.render('share', { expiration, shareLinkRoute, shareId: id });
+});
+
+filesRouter.post('/share/:id', async (req, res) => {
+    const { id } = req.params;
+    const body = req.body;
+    
+    // 1. Check if share file exists
+    const fileShareRecord = await prisma.share.findUnique({
+        where: { id },
+        include: {
+            view: {
+                select: {
+                    hashedPassphrase: true,
+                    fileId: true
+                }
+            }
+        }
+    });
+    if (!fileShareRecord) {
+        res.statusCode = 404;
+        res.send('Not Found');
+        return;
+    }
+
+    // 2. Check if passphrase is sent
+    const parsedBody = z.object({
+        passphrase: z.string()
+    }).safeParse(body);
+    if (parsedBody.error) {
+        res.statusCode = 400;
+        res.send('Passphrase required');
+        return;
+    }
+
+    // 3. Check if correct passphrase
+    const storedHashedPass = fileShareRecord.view.hashedPassphrase;
+    const enteredPassphrase = parsedBody.data.passphrase;
+    const isMatch = bcrypt.compare(enteredPassphrase, storedHashedPass);
+    if (!isMatch) {
+        res.statusCode = 401;
+        res.send('Incorrect Passphrase');
+        return;
+    }
+
+    // 4. Delete file manually: File in Pinata, file record in DB, and file-deletion job
+    await manuallyDeleteFile(fileShareRecord.view.fileId, fileShareRecord.id);
+
+    res.redirect('/');
 });
 
 filesRouter.post('/upload', upload.single('attachment'), async (req, res) => {
@@ -171,7 +219,8 @@ filesRouter.post('/upload', upload.single('attachment'), async (req, res) => {
                     create: {
                         expiration
                     }
-                }
+                },
+                fileId: uploadedFile.id
             },
             select: {
                 share: true
