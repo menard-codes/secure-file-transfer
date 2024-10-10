@@ -1,12 +1,14 @@
+import type { BadRequest, InternalServerError } from "~/response.schema";
+
 import { Router } from "express";
 import multer from "multer";
-import { manuallyDeleteFile, scheduleFileDeletion } from "~/background-tasks";
-import { getFile, getFileUrl, uploadFile } from "~/myPinata";
-import { FileUploadSchema } from "~/schemas";
-import { getExpISOString } from "~/utils";
 import bcrypt from 'bcrypt';
+
+import { manuallyDeleteFile, scheduleFileDeletion } from "~/background-tasks";
+import { getFileUrl, uploadFile } from "~/myPinata";
+import { FileUploadSchema, FileAccessRequestSchema } from "~/schemas";
+import { getExpISOString } from "~/utils";
 import { SALT_ROUNDS } from "~/constants";
-import { z } from "zod";
 
 export const filesRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -66,7 +68,7 @@ filesRouter.post('/view/:id', async (req, res) => {
     }
 
     // 2. check passphrase
-    const parsedData = z.object({ passphrase: z.string() }).safeParse(data);
+    const parsedData = FileAccessRequestSchema.safeParse(data);
 
     // 2.1 no passphrase
     if (parsedData.error) {
@@ -87,6 +89,7 @@ filesRouter.post('/view/:id', async (req, res) => {
     }
 
     // 3. Authorized request, return the file
+    // TODO: Change with Raw File (that'll be auto downloaded)
     const urlExpiration = 300; // URL Expiration is set to 5 minutes
     const fileUrl = await getFileUrl(viewFile.cid, urlExpiration);
     if (!fileUrl) {
@@ -148,9 +151,7 @@ filesRouter.post('/share/:id', async (req, res) => {
     }
 
     // 2. Check if passphrase is sent
-    const parsedBody = z.object({
-        passphrase: z.string()
-    }).safeParse(body);
+    const parsedBody = FileAccessRequestSchema.safeParse(body);
     if (parsedBody.error) {
         res.statusCode = 400;
         res.send('Passphrase required');
@@ -170,7 +171,11 @@ filesRouter.post('/share/:id', async (req, res) => {
     // 4. Delete file manually: File in Pinata, file record in DB, and file-deletion job
     await manuallyDeleteFile(fileShareRecord.view.fileId, fileShareRecord.id);
 
-    res.redirect('/');
+    res.redirect('/upload');
+});
+
+filesRouter.get('/upload', async (req, res) => {
+    res.render('upload');
 });
 
 filesRouter.post('/upload', upload.single('attachment'), async (req, res) => {
@@ -180,16 +185,35 @@ filesRouter.post('/upload', upload.single('attachment'), async (req, res) => {
     // 1. Check file attachment and upload metadata from request
     const parsedFileUpload = FileUploadSchema.safeParse(data);
     if (parsedFileUpload.error) {
-        // TODO: Better error handling
-        console.log(parsedFileUpload.error);
-        res.statusCode = 400;
-        res.send('Bad Request');
+        const badRequest: BadRequest = {
+            status: 400,
+            statusText: "Bad Request",
+            message: "Invalid request body",
+            error: parsedFileUpload.error,
+            data: {}
+        };
+
+        console.log(badRequest);
+
+        res.statusCode = badRequest.status;
+        res.statusMessage = badRequest.statusText;
+        res.json(badRequest);
         return;
     }
     if (!attachment) {
-        // TODO: Better error handling
-        res.statusCode = 400;
-        res.json('File upload required');
+        const badRequest: BadRequest = {
+            status: 400,
+            statusText: "Bad Request",
+            message: "File is required",
+            error: parsedFileUpload.error,
+            data: {}
+        };
+
+        console.log(badRequest);
+
+        res.statusCode = badRequest.status;
+        res.statusMessage = badRequest.statusText;
+        res.json(badRequest);
         return;
     }
     
@@ -199,39 +223,65 @@ filesRouter.post('/upload', upload.single('attachment'), async (req, res) => {
     });
     const uploadedFile = await uploadFile(file);
     if (!uploadedFile) {
-        // TODO: Better error handling
-        res.statusCode = 500;
-        console.log(uploadedFile);
-        res.send('Something went wrong while uploading the file');
+        console.error('Got undefined after uploading to Pinata. Needs further investigation.');
+        const serverError: InternalServerError = {
+            status: 500,
+            statusText: "Internal Server Error",
+            message: "Something went wrong... Please try again later or find support",
+            error: {},
+            data: {}
+        };
+
+        res.statusCode = serverError.status;
+        res.statusMessage = serverError.statusText;
+        res.json(serverError);
         return;
     }
 
     // 3. Save a record in the database about the uploaded file
     const expiration = getExpISOString(parsedFileUpload.data.expiration);
     const uploadedFileRecord = await prisma.$transaction(async (tx) => {
-        const salt = await bcrypt.genSalt(SALT_ROUNDS);
-        const hashedPassphrase = await bcrypt.hash(parsedFileUpload.data.passphrase, salt);
-        return tx.view.create({
-            data: {
-                cid: uploadedFile.cid,
-                hashedPassphrase,
-                share: {
-                    create: {
-                        expiration
-                    }
+        try {
+            const salt = await bcrypt.genSalt(SALT_ROUNDS);
+            const hashedPassphrase = await bcrypt.hash(parsedFileUpload.data.passphrase, salt);
+            return await tx.view.create({
+                data: {
+                    cid: uploadedFile.cid,
+                    hashedPassphrase,
+                    share: {
+                        create: {
+                            expiration
+                        }
+                    },
+                    fileId: uploadedFile.id
                 },
-                fileId: uploadedFile.id
-            },
-            select: {
-                share: true
-            }
-        });
+                select: {
+                    share: true
+                }
+            });
+        } catch (error) {
+            console.error('Something went wrong while saving to database');
+            console.error(error);
+        }
     });
     
-    console.log(parsedFileUpload.data.expiration, expiration)
+    if (!uploadedFileRecord || !uploadedFileRecord.share) {
+        console.log('Saving file record Share and View is returning an undefined. Needs further investigation');
+        const serverError: InternalServerError = {
+            status: 500,
+            statusText: "Internal Server Error",
+            message: "Something went wrong... Please try again later or find support",
+            error: {},
+            data: {}
+        };
+        res.statusCode = serverError.status;
+        res.statusMessage = serverError.statusText;
+        res.json(serverError);
+        return;
+    }
 
     // 4. Add file deletion job to trigger on selected time
-    scheduleFileDeletion(uploadedFile.id, uploadedFileRecord.share!.id, uploadedFileRecord.share!.expiration)
+    scheduleFileDeletion(uploadedFile.id, uploadedFileRecord.share.id, uploadedFileRecord.share.expiration)
 
-    res.redirect(`/files/share/${uploadedFileRecord.share!.id}`);
+    res.redirect(`/files/share/${uploadedFileRecord.share.id}`);
 });
