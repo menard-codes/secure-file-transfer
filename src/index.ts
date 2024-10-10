@@ -1,5 +1,4 @@
 import express from "express";
-import type { Request, Response } from "express";
 import dotenv from "dotenv";
 import { filesRouter } from "./routes/files.route";
 import { dirname, join } from "path";
@@ -57,11 +56,12 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
 
-  app.use('/files', filesRouter);
-
-  app.get('/', async (req: Request, res: Response) => {
+  app.get('/', (req, res) => {
     res.render('index');
   });
+
+  // routes
+  app.use('/files', filesRouter);
 
   // TODO: 404 page
   app.use((req, res) => {res.status(404).send('Not Found')});
