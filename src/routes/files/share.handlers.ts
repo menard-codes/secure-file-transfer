@@ -86,7 +86,7 @@ export class ShareHandlers {
         // 4. Delete file manually: File in Pinata, file record in DB, and file-deletion job
         await manuallyDeleteFile(fileShareRecord.view.fileId, fileShareRecord.id);
 
-        res.redirect('/upload');
+        res.redirect('/files/upload');
 
     }
 }
