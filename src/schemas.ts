@@ -6,3 +6,5 @@ export const FileUploadSchema = z.object({
 });
 
 export type ExpirationEnum = z.infer<typeof FileUploadSchema.shape.expiration>;
+
+export const FileAccessRequestSchema = z.object({ passphrase: z.string() });
