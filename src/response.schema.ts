@@ -3,6 +3,7 @@ interface Req {
     status: number;
     statusText: string;
     message: string;
+    redirect?: string;
 }
 
 // #######################################
@@ -34,7 +35,7 @@ export interface NoContent extends SuccessRequest {
 // #######################################
 
 // HTTP Redirect Responses
-export interface RedirectRequest {
+interface RedirectRequest {
     error: {};
     data: {};
 }
@@ -50,7 +51,9 @@ export interface SeeOther extends RedirectRequest {
 // HTTP Error Responses
 interface ErrorRequest extends Req {
     data: {};
-    error: unknown;
+    error: {
+        [key: string]: string;
+    };
 }
 
 // ####################

@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import { filesRouter } from "./routes/files.route";
+import { filesRouter } from "./routes/files/route";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { exec } from 'child_process';
@@ -64,7 +64,9 @@ async function startServer() {
   app.use('/files', filesRouter);
 
   // TODO: 404 page
-  app.use((req, res) => {res.status(404).send('Not Found')});
+  app.use((req, res) => {
+    res.status(404).render('404')
+  });
 
   app.listen(PORT, () => console.log(`Server listening to port ${PORT}`));
 }

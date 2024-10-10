@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+    <title>Secure File Transfer | Upload</title>
+
+    <style>
+        #file-upload > label.file-label:first-child {
+            width: 100%;
+        }
+
+        #file-upload > label.file-label:first-child > .file-name {
+            max-width: none;
+        }
+
+        #select-container.select,
+        #select-container.select > select#expiration {
+            width: 100%;
+        }
+
+        form button[type=submit] {
+            display: block;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    <main class="container is-max-tablet p-3">
+        <section class="my-6">
+            <h1 class="title is-spaced">Send Files Securely</h1>
+            <p class="subtitle">Keep your sensitive files out from emails and chat logs. Create disposable share file links.</p>
+        </section>
+
+        <!-- <form id="file-upload-form" method="post" action="/files/upload" enctype="multipart/form-data"> -->
+        <form id="file-upload-form">
+            <div id="file-upload" class="file is-boxed is-centered has-name is-large custom-fit-width">
+                <label class="file-label">
+                  <input class="file-input" type="file" name="attachment" id="attachment" required />
+                  <span class="file-cta py-6">
+                    <span class="file-icon">
+                      <i class="fas fa-upload"></i>
+                    </span>
+                    <span class="file-label"> Upload a File </span>
+                  </span>
+                  <span class="file-name" id="file-name"> No file chosen </span>
+                </label>
+            </div>
+            <div class="box">
+                <h3 class="is-size-4 mb-3">Privacy</h3>
+
+                <div class="columns">
+                    <div class="column field">
+                        <%- include('partials/password-input.ejs', { helpText: 'File Passphrase' }) %>
+                    </div>
+                    
+                    <div class="column field">
+                        <label class="label" for="expiration">Expiration</label>
+                        <div class="control">
+                            <% const expirations = ['7 Days', '3 Days', '24 Hours', '12 Hours', '4 Hours', '1 Hour', '5 Minutes'] %>
+                            <div id="select-container" class="select">
+                                <select id="expiration" name="expiration" required>
+                                    <option value="" selected disabled>Choose Expiration</option>
+                                    <% for (let exp of expirations) { %>
+                                        <option
+                                            value="<%= exp %>"
+                                        >
+                                            Expires in <%= exp %>
+                                        </option>
+                                    <% } %>
+                                </select>
+                            </div>
+                            <span class="help">Auto-deletes the file after expiration</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="button is-info">Create a Secret Link</button>
+
+            <p class="has-text-centered py-3">
+                <em>* A secret link only works once and then disappears forever.</em>
+            </p>
+        
+        </form>
+    </main>
+
+    <script>
+        // Set submit button to loading `onsubmit`
+        const fileUploadForm = document.getElementById('file-upload-form');
+        fileUploadForm.onsubmit = async (e) => {
+            // const submitBtn = fileUploadForm.querySelector('button[type=submit]');
+            // submitBtn.classList.add('is-loading');
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const res = await fetch('/files/upload', {
+                method: 'post',
+            });
+            if (!res.ok) {
+                const data = await res.text();
+                console.log(data);
+            }
+        }
+
+        let fileInput = document.getElementById('attachment');
+        let fileName = document.getElementById('file-name');
+        let fileUploadBox = document.getElementById('file-upload');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileUploadBox.addEventListener(eventName, preventDefaults, false);
+        });
+
+        fileUploadBox.addEventListener('mouseover', () => {
+            if (!fileUploadBox.classList.contains('is-info')) {
+                highlight();
+            }
+        });
+
+        fileUploadBox.addEventListener('mouseleave', () => {
+            if (fileUploadBox.classList.contains('is-info')) {
+                unhighlight();
+            }
+        })
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileUploadBox.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileUploadBox.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            fileUploadBox.classList.add('is-info');
+        }
+
+        function unhighlight() {
+            fileUploadBox.classList.remove('is-info');
+        }
+
+        fileUploadBox.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                fileName.textContent = files[0].name;
+                fileInput.files = files;
+            }
+        }
+
+        fileInput.addEventListener('change', function(e) {
+            handleFiles(this.files);
+        });
+    </script>
+</body>
+</html>
