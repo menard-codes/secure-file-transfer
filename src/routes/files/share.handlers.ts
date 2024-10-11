@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { FileAccessRequestSchema } from "~/schemas";
 import { manuallyDeleteFile } from "~/background-tasks";
-import { ErrorResponseTemplates } from "../response-templates";
+import { ErrorResponseTemplates } from "~/routes/response-templates";
 
 export class ShareHandlers {
     public static async GET(req: Request, res: Response) {
@@ -13,11 +13,7 @@ export class ShareHandlers {
             where: { id }
         });
         if (!fileRecord) {
-            const badRequest = ErrorResponseTemplates.badRequestTemplate("Not Found. This might be either deleted already, expired, or never existed at all.", {});
-            console.log(badRequest);
-            res.statusCode = badRequest.status;
-            res.statusMessage = badRequest.statusText;
-            res.json(badRequest);
+            res.redirect('/404');
             return;
         }
 
@@ -53,10 +49,7 @@ export class ShareHandlers {
             }
         });
         if (!fileShareRecord) {
-            const badRequest = ErrorResponseTemplates.badRequestTemplate("Not Found. This might be either deleted already, expired, or never existed at all.", {})
-            res.statusCode = badRequest.status;
-            res.statusMessage = badRequest.statusText;
-            res.json(badRequest);
+            res.redirect('404');
             return;
         }
 
@@ -64,7 +57,7 @@ export class ShareHandlers {
         const parsedBody = FileAccessRequestSchema.safeParse(body);
         if (parsedBody.error) {
             const error = parsedBody.error.flatten().fieldErrors;
-            const badRequest = ErrorResponseTemplates.badRequestTemplate("Invalid request body", error as {[key: string] : string});
+            const badRequest = ErrorResponseTemplates.badRequestTemplate("Invalid Request", error as {[key: string] : string});
             res.statusCode = badRequest.status;
             res.statusMessage = badRequest.statusText;
             res.json(badRequest);
@@ -76,7 +69,7 @@ export class ShareHandlers {
         const enteredPassphrase = parsedBody.data.passphrase;
         const isMatch = bcrypt.compare(enteredPassphrase, storedHashedPass);
         if (!isMatch) {
-            const unauthorizedError = ErrorResponseTemplates.unauthorizedTemplate("Incorrect Passphrase", { 'passphrase': 'Incorrect Passphrase' });
+            const unauthorizedError = ErrorResponseTemplates.unauthorizedTemplate("Incorrect Passphrase", { passphrase: 'Incorrect Passphrase' });
             res.statusCode = unauthorizedError.status;
             res.statusMessage = unauthorizedError.statusText;
             res.json(unauthorizedError);
@@ -86,7 +79,10 @@ export class ShareHandlers {
         // 4. Delete file manually: File in Pinata, file record in DB, and file-deletion job
         await manuallyDeleteFile(fileShareRecord.view.fileId, fileShareRecord.id);
 
-        res.redirect('/files/upload');
-
+        res.json({
+            data: {
+                redirect: '/files/upload'
+            }
+        });
     }
 }

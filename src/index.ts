@@ -60,12 +60,18 @@ async function startServer() {
     res.render('index');
   });
 
+  // default 404 page where all 404 errors redirect to
+  app.get('/404', (req, res) => {
+    res.statusCode = 404;
+    res.statusMessage = 'Not Found';
+    res.render('404');
+  })
+
   // routes
   app.use('/files', filesRouter);
 
-  // TODO: 404 page
   app.use((req, res) => {
-    res.status(404).render('404')
+    res.redirect('/404');
   });
 
   app.listen(PORT, () => console.log(`Server listening to port ${PORT}`));
