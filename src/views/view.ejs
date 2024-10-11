@@ -2,16 +2,91 @@
 <html lang="en">
 <head>
     <%- include('partials/head.ejs') %>
+    <title>Secure File Transfer - View</title>
+
+    <style>
+        form button[type=submit] {
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
     <%- include('partials/navbar.ejs') %>
-    <h1>Access File</h1>
-    <form method="post" action="/view/<%= viewId %>">
-        <label>
-            Passphrase
-            <input name="passphrase" />
-        </label>
-        <button>Submit</button>
-    </form>
+    <main class="container is-max-tablet p-3">
+        <section class="my-6">
+            <h1 class="title is-spaced">View Shared File</h1>
+            <p class="subtitle">Enter the passphrase to view the file.</p>
+            <div class="notification is-info is-light">
+                This will be valid until <strong><%= expiration %></strong>.
+            </div>
+        </section>
+
+        <div class="box" x-data="viewFileForm">
+            <template x-if="!isViewingFile">
+                <form @submit.prevent="handleSubmit">
+                    <template x-if="showNotif">
+                        <div class="notification is-danger is-light">
+                            <button class="delete" @click="showNotif = false"></button>
+                            <p x-text="error.message"></p>
+                        </div>
+                    </template>
+                    <%- include('partials/password-input.ejs', { helpText: 'Enter File Passphrase' }) %>
+        
+                    <button type="submit" id="submit-btn" class="button is-info" :class="isSubmitting && 'is-loading'">Show Shared File</button>
+                </form>
+            </template>
+            <template x-if="isViewingFile">
+                <div>
+                    <h2>Here's the shared file</h2>
+                    <a :href="data.redirect" target="_blank">View File</a>
+                    <p>Note: <span x-text="data.expiration"></span></p>
+                </div>
+            </template>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('viewFileForm', () => ({
+                error: {},
+                data: {},
+                isSubmitting: false,
+                showNotif: false,
+                isViewingFile: false,
+
+                async handleSubmit(e) {
+                    try {
+                        this.isSubmitting = true;
+                        const formData = new FormData(e.currentTarget);
+                        const data = Object.fromEntries(formData);
+                        const res = await fetch('/files/view/<%= viewId %>', {
+                            method: "post",
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        const json = await res.json();
+                        if (!res.ok) {
+                            const newError = {}
+                            Object.entries(json.error).forEach(([key, val]) => {
+                                newError[key] = val;
+                            });
+                            newError.message = json.message;
+                            this.error = newError;
+                            this.showNotif = true;
+                        } else {
+                            this.data = json.data;
+                            this.isViewingFile = true;
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                }
+            }))
+        });
+    </script>
 </body>
 </html>

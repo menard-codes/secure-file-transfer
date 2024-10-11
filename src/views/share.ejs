@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <%- include('partials/head.ejs') %>
+    <title>Secure File Transfer - Share</title>
     <style>
         button#delete-modal-btn {
             display: block;
@@ -45,33 +46,81 @@
 
     <!-- ###################################################################### -->
     <!-- FILE DELETION MODAL -->
-    <div id="file-delete-modal" class="modal">
+    <div x-data="manualDeleteForm" id="file-delete-modal" class="modal">
         <div class="modal-background"></div>
-        <div class="modal-card">
-            <header class="modal-card-head">
-                <p class="modal-card-title">Delete the file</p>
-                <button class="delete" aria-label="close"></button>
-            </header>
-            <section class="modal-card-body">
-                <p class="mb-3">Are you sure you want to delete this file?</p>
-                <%- include('partials/password-input.ejs', { helpText: 'Enter Passphrase to proceed with file deletion' }) %>
-            </section>
-            <footer class="modal-card-foot">
-                <div class="buttons is-flex">
-                    <button class="button is-danger">
-                        <span class="icon">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </span>
-                        <span>Delete File</span>
-                    </button>
-                    <button class="button cancel-btn">Cancel</button>
-                </div>
-            </footer>
-        </div>
+        <form @submit.prevent="handleSubmit">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Delete the file</p>
+                    <button type="button" class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p class="mb-3">Are you sure you want to delete this file?</p>
+                    <template x-if="showNotif">
+                        <div class="notification is-danger is-light">
+                            <button class="delete" @click="showNotif = false"></button>
+                            <p x-text="error.message"></p>
+                        </div>
+                    </template>
+                    <%- include('partials/password-input.ejs', { helpText: 'Enter Passphrase to proceed with file deletion' }) %>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons is-flex">
+                        <button type="submit" class="button is-danger" :class="isSubmitting && 'is-loading'">
+                            <span class="icon">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </span>
+                            <span>Delete File</span>
+                        </button>
+                        <button type="button" class="button cancel-btn">Cancel</button>
+                    </div>
+                </footer>
+            </div>
+        </form>
       </div>
     <!-- ###################################################################### -->
 
     <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('manualDeleteForm', () => ({
+                error: {},
+                data: {},
+                isSubmitting: false,
+                showNotif: false,
+
+                async handleSubmit(e) {
+                    try {
+                        this.isSubmitting = true;
+                        const formData = new FormData(e.currentTarget);
+                        const data = Object.fromEntries(formData);
+                        const res = await fetch('/files/share/<%= shareId %>', {
+                            method: 'post',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        const json = await res.json();
+                        if (!res.ok) {
+                            const newErrors = {};
+                            Object.entries(json.error).forEach(([key, val]) => {
+                                newErrors[key] = val[0];
+                            });
+                            newErrors.message = json.message;
+                            this.error = newErrors;
+                            this.showNotif = true;
+                        } else {
+                            location.href = location.origin + json.data.redirect;
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                }
+            }))
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             // Functions to open and close a modal
             function openModal($el) {
@@ -103,14 +152,14 @@
                 const $target = $close.closest('.modal');
 
                 $close.addEventListener('click', () => {
-                closeModal($target);
+                    closeModal($target);
                 });
             });
 
             // Add a keyboard event to close all modals
             document.addEventListener('keydown', (event) => {
                 if(event.key === "Escape") {
-                closeAllModals();
+                    closeAllModals();
                 }
             });
         });

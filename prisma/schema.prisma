@@ -21,7 +21,8 @@ model Share {
 model View {
   id               String @id @default(cuid())
   hashedPassphrase String
-  fileId           String
+  cid              String
+  fileId           String @unique
 
   share Share?
 }

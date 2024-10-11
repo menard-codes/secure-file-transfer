@@ -17,19 +17,28 @@ export async function uploadFile(file: FileObject) {
     }
 }
 
-export async function getFileUrl(cid: string, expires: number) {
+export async function getFileUrl(cid: string, expires=1800) {
     try {
         const signedUrl = await pinata.gateways.createSignedURL({
             cid,
-            expires
+            expires // defaults to 30 minutes (1800 seconds)
         });
         return signedUrl;
     } catch (error) {
         // TODO: Error handling
+        console.error(error);
     }
 }
 
-
+export async function getFile(cid: string) {
+    try {
+        const file = await pinata.gateways.get(cid);
+        return file;
+    } catch (error) {
+        // TODO: Better error handling
+        console.error(error);
+    }
+}
 
 export async function deleteFile(fileId: string) {
     try {
