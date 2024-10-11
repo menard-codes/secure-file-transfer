@@ -64,7 +64,7 @@ export class ErrorResponseTemplates {
         }
     }
 
-    public static unauthorizedTemplate(message: string, error: { [key: string]: string }): Unauthorized {
+    public static unauthorizedTemplate(message: string, error: { [key: string]: string[] | string }): Unauthorized {
         return {
             status: 401,
             statusText: "Unauthorized",

@@ -21,22 +21,72 @@
             </div>
         </section>
 
-        <div class="box">
-            <form id="file-access-form" method="post" action="/files/view/<%= viewId %>">
-                <%- include('partials/password-input.ejs', { helpText: 'Enter File Passphrase' }) %>
-    
-                <button type="submit" id="submit-btn" class="button is-info">View File</button>
-            </form>
+        <div class="box" x-data="viewFileForm">
+            <template x-if="!isViewingFile">
+                <form @submit.prevent="handleSubmit">
+                    <template x-if="showNotif">
+                        <div class="notification is-danger is-light">
+                            <button class="delete" @click="showNotif = false"></button>
+                            <p x-text="error.message"></p>
+                        </div>
+                    </template>
+                    <%- include('partials/password-input.ejs', { helpText: 'Enter File Passphrase' }) %>
+        
+                    <button type="submit" id="submit-btn" class="button is-info" :class="isSubmitting && 'is-loading'">Show Shared File</button>
+                </form>
+            </template>
+            <template x-if="isViewingFile">
+                <div>
+                    <h2>Here's the shared file</h2>
+                    <a :href="data.redirect" target="_blank">View File</a>
+                    <p>Note: <span x-text="data.expiration"></span></p>
+                </div>
+            </template>
         </div>
     </main>
 
     <script>
-        // Set submit button to loading `onsubmit`
-        const fileUploadForm = document.getElementById('file-access-form');
-        fileUploadForm.onsubmit = () => {
-            const submitBtn = fileUploadForm.querySelector('button[type=submit]');
-            submitBtn.classList.add('is-loading');
-        }
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('viewFileForm', () => ({
+                error: {},
+                data: {},
+                isSubmitting: false,
+                showNotif: false,
+                isViewingFile: false,
+
+                async handleSubmit(e) {
+                    try {
+                        this.isSubmitting = true;
+                        const formData = new FormData(e.currentTarget);
+                        const data = Object.fromEntries(formData);
+                        const res = await fetch('/files/view/<%= viewId %>', {
+                            method: "post",
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        const json = await res.json();
+                        if (!res.ok) {
+                            const newError = {}
+                            Object.entries(json.error).forEach(([key, val]) => {
+                                newError[key] = val;
+                            });
+                            newError.message = json.message;
+                            this.error = newError;
+                            this.showNotif = true;
+                        } else {
+                            this.data = json.data;
+                            this.isViewingFile = true;
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                }
+            }))
+        });
     </script>
 </body>
 </html>

@@ -67,9 +67,9 @@ export class ShareHandlers {
         // 3. Check if correct passphrase
         const storedHashedPass = fileShareRecord.view.hashedPassphrase;
         const enteredPassphrase = parsedBody.data.passphrase;
-        const isMatch = bcrypt.compare(enteredPassphrase, storedHashedPass);
+        const isMatch = await bcrypt.compare(enteredPassphrase, storedHashedPass);
         if (!isMatch) {
-            const unauthorizedError = ErrorResponseTemplates.unauthorizedTemplate("Incorrect Passphrase", { passphrase: 'Incorrect Passphrase' });
+            const unauthorizedError = ErrorResponseTemplates.unauthorizedTemplate("Incorrect Passphrase", { passphrase: ['Incorrect Passphrase'] });
             res.statusCode = unauthorizedError.status;
             res.statusMessage = unauthorizedError.statusText;
             res.json(unauthorizedError);

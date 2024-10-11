@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { FileAccessRequestSchema } from "~/schemas";
 import { getFileUrl } from "~/myPinata";
 import { ErrorResponseTemplates } from "~/routes/response-templates";
+import { rescheduleFileDeletion } from "~/background-tasks";
 
 export class ViewHandlers {
     public static async GET(req: Request, res: Response) {
@@ -19,10 +20,7 @@ export class ViewHandlers {
         });
     
         if (!viewFile) {
-            const notFound = ErrorResponseTemplates.notFoundTemplate("Not found in our records", {});
-            res.statusCode = notFound.status;
-            res.statusMessage = notFound.statusText;
-            res.json(notFound);
+            res.redirect('/404');
             return;
         }
     
@@ -49,17 +47,15 @@ export class ViewHandlers {
             include: {
                 share: {
                     select: {
-                        expiration: true
+                        expiration: true,
+                        id: true
                     }
                 }
             }
         });
 
         if (!viewFile || !viewFile.share) {
-            const notFound = ErrorResponseTemplates.notFoundTemplate("File record not found", {});
-            res.statusCode = notFound.status;
-            res.statusMessage = notFound.statusText;
-            res.json(notFound);
+            res.redirect('/404');
             return;
         }
 
@@ -82,7 +78,7 @@ export class ViewHandlers {
         
         // 2.2 Incorrect passphrase
         if (!isSame) {
-            const unauthorizedError = ErrorResponseTemplates.unauthorizedTemplate("Invalid credentials", { passphrase: 'Invalid credentials' });
+            const unauthorizedError = ErrorResponseTemplates.unauthorizedTemplate("Invalid credentials", { passphrase: ['Invalid credentials'] });
             res.statusCode = unauthorizedError.status;
             res.statusMessage = unauthorizedError.statusText;
             res.json(unauthorizedError);
@@ -90,19 +86,22 @@ export class ViewHandlers {
         }
 
         // 3. Authorized request, return the file
-        // TODO: Change with Raw File (that'll be auto downloaded)
-        const urlExpiration = 300; // URL Expiration is set to 5 minutes
+        const urlExpiration = 300; // URL Expiration is set to 300seconds / 5minutes
         const fileUrl = await getFileUrl(viewFile.cid, urlExpiration);
         if (!fileUrl) {
-            const notFound = ErrorResponseTemplates.notFoundTemplate("File not found", { file: 'File not found' });
-            res.statusCode = notFound.status;
-            res.statusMessage = notFound.statusText;
-            res.json(notFound);
+            res.redirect('/404');
             return;
         }
 
-        // TODO: Autodelete file
-        res.redirect(fileUrl);
-
+        // Reschedule file deletion (expiration) to be 5 minutes
+        await rescheduleFileDeletion(viewFile.fileId, viewFile.share.id, urlExpiration * 1000)
+        
+        res.json({
+            data: {
+                redirect: fileUrl,
+                expiration: `Expires in ${urlExpiration / 60} minutes`
+            }
+        });
+        return;
     }
 }

@@ -35,6 +35,22 @@ export async function scheduleFileDeletion(fileId: string, shareId: string, expi
     return job;
 }
 
+export async function rescheduleFileDeletion(fileId: string, shareId: string, newMsDelay: number, skipIfExistingDelayIsLower=true) {
+    const jobId = `delete-${fileId}-${shareId}`;
+    const job = await fileDeleteQueue.getJob(jobId);
+    if (job) {
+        if (skipIfExistingDelayIsLower && job.delay <= newMsDelay) {
+            console.log('Skipping job rescheduling', jobId);
+            return;
+        }
+
+        console.log(`Rescheduling Job: ${jobId}. Updated time for scheduled deletion: ${newMsDelay / 1000 / 60} minutes`);
+        await job.changeDelay(newMsDelay);
+    } else {
+        console.log(`Job "${jobId}" not found`);
+    }
+}
+
 export async function manuallyDeleteFile(fileId: string, shareId: string) {
     try {
         // Remove any scheduled deletion job

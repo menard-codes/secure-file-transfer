@@ -64,9 +64,12 @@ export interface BadRequest extends ErrorRequest {
     statusText: 'Bad Request';
 }
 
-export interface Unauthorized extends ErrorRequest {
+export interface Unauthorized extends Omit<ErrorRequest, 'error'> {
     status: 401;
     statusText: 'Unauthorized';
+    error: {
+        [key: string]: string[] | string
+    }
 }
 
 export interface NotFound extends ErrorRequest {
