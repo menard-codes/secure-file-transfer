@@ -37,9 +37,23 @@
             </template>
             <template x-if="isViewingFile">
                 <div>
-                    <h2>Here's the shared file</h2>
-                    <a :href="data.redirect" target="_blank">View File</a>
-                    <p>Note: <span x-text="data.expiration"></span></p>
+                    <h2 class="is-size-4">Here's the shared file</h2>
+                    <a
+                        :href="data.redirect"
+                        target="_blank"
+                        class="button is-info my-4"
+                    >
+                        <span class="icon">
+                            <i class="fa-solid fa-eye"></i>
+                        </span>
+                        <span>View File</span>
+                    </a>
+                    <p>
+                        <em>
+                            *<span x-text="data.expiration"></span>.
+                            Save the file before it expires and <strong>NEVER</strong> share the file link anywhere
+                        </em>
+                    </p>
                 </div>
             </template>
         </div>
