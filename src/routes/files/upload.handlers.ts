@@ -9,7 +9,7 @@ import { ErrorResponseTemplates } from "~/routes/response-templates";
 
 export class UploadHandlers {
     public static async GET(req: Request, res: Response) {
-        res.render('upload');
+        res.render('upload', { errors: {}, data: {} });
     }
 
     public static async POST(req: Request, res: Response) {
@@ -20,7 +20,7 @@ export class UploadHandlers {
         const parsedFileUpload = FileUploadSchema.safeParse(data);
         if (parsedFileUpload.error) {
             const errors = parsedFileUpload.error.flatten().fieldErrors;
-            const badRequest = ErrorResponseTemplates.badRequestTemplate('Invalid Request Body', errors as { [key: string]: string });
+            const badRequest = ErrorResponseTemplates.badRequestTemplate('Invalid Form Upload', errors as { [key: string]: string });
             console.log(badRequest);
             res.statusCode = badRequest.status;
             res.statusMessage = badRequest.statusText;
@@ -28,7 +28,7 @@ export class UploadHandlers {
             return;
         }
         if (!attachment) {
-            const badRequest = ErrorResponseTemplates.badRequestTemplate('File is required', {file: 'Invalid or missing file'});
+            const badRequest = ErrorResponseTemplates.badRequestTemplate('File is required', {attachment: 'Invalid or missing file'});
             console.log(badRequest);
             res.statusCode = badRequest.status;
             res.statusMessage = badRequest.statusText;
@@ -90,6 +90,10 @@ export class UploadHandlers {
         // 4. Add file deletion job to trigger on selected time
         scheduleFileDeletion(uploadedFile.id, uploadedFileRecord.share.id, uploadedFileRecord.share.expiration)
     
-        res.redirect(`/files/share/${uploadedFileRecord.share.id}`);
+        res.json({
+            data: {
+                redirect: `/files/share/${uploadedFileRecord.share.id}`
+            }
+        });
     }
 }
