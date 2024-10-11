@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head.ejs') %>
+    <title>Secure File Transfer - Share</title>
+    <style>
+        button#delete-modal-btn {
+            display: block;
+            width: 100%;
+        }
+
+        .modal-card-foot > .buttons {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/navbar.ejs') %>
+    <main class="container is-max-tablet p-3">
+        <article class="message is-warning mt-6">
+            <div class="message-header">
+                <p>
+                    <span class="icon"><i class="fa-solid fa-lightbulb"></i></span>
+                    Quick Note
+                </p>
+            </div>
+            <div class="message-body">
+                This is a passphrase-protected file share link.
+                After viewing the file, it will be deleted from the records.
+            </div>
+        </article>
+
+        <div class="box">
+            <%- include('partials/clipboard-copy.ejs', { shareLinkRoute, label: 'Share this link' }) %>
+            <p>Expiration: <em><%= expiration %> UTC</em></p>
+            
+            <button id="delete-modal-btn" class="js-modal-trigger button is-danger mt-3" data-target="file-delete-modal">
+                <span class="icon">
+                    <i class="fa-solid fa-trash-can"></i>
+                </span>
+                <span>Delete Now</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- ###################################################################### -->
+    <!-- FILE DELETION MODAL -->
+    <div x-data="manualDeleteForm" id="file-delete-modal" class="modal">
+        <div class="modal-background"></div>
+        <form @submit.prevent="handleSubmit">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Delete the file</p>
+                    <button type="button" class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p class="mb-3">Are you sure you want to delete this file?</p>
+                    <template x-if="showNotif">
+                        <div class="notification is-danger is-light">
+                            <button class="delete" @click="showNotif = false"></button>
+                            <p x-text="error.message"></p>
+                        </div>
+                    </template>
+                    <%- include('partials/password-input.ejs', { helpText: 'Enter Passphrase to proceed with file deletion' }) %>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons is-flex">
+                        <button type="submit" class="button is-danger" :class="isSubmitting && 'is-loading'">
+                            <span class="icon">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </span>
+                            <span>Delete File</span>
+                        </button>
+                        <button type="button" class="button cancel-btn">Cancel</button>
+                    </div>
+                </footer>
+            </div>
+        </form>
+      </div>
+    <!-- ###################################################################### -->
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('manualDeleteForm', () => ({
+                error: {},
+                data: {},
+                isSubmitting: false,
+                showNotif: false,
+
+                async handleSubmit(e) {
+                    try {
+                        this.isSubmitting = true;
+                        const formData = new FormData(e.currentTarget);
+                        const data = Object.fromEntries(formData);
+                        const res = await fetch('/files/share/<%= shareId %>', {
+                            method: 'post',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        const json = await res.json();
+                        if (!res.ok) {
+                            const newErrors = {};
+                            Object.entries(json.error).forEach(([key, val]) => {
+                                newErrors[key] = val[0];
+                            });
+                            newErrors.message = json.message;
+                            this.error = newErrors;
+                            this.showNotif = true;
+                        } else {
+                            location.href = location.origin + json.data.redirect;
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                }
+            }))
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Functions to open and close a modal
+            function openModal($el) {
+                $el.classList.add('is-active');
+            }
+
+            function closeModal($el) {
+                $el.classList.remove('is-active');
+            }
+
+            function closeAllModals() {
+                (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+                closeModal($modal);
+                });
+            }
+
+            // Add a click event on buttons to open a specific modal
+            (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+                const modal = $trigger.dataset.target;
+                const $target = document.getElementById(modal);
+
+                $trigger.addEventListener('click', () => {
+                openModal($target);
+                });
+            });
+
+            // Add a click event on various child elements to close the parent modal
+            (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button.cancel-btn') || []).forEach(($close) => {
+                const $target = $close.closest('.modal');
+
+                $close.addEventListener('click', () => {
+                    closeModal($target);
+                });
+            });
+
+            // Add a keyboard event to close all modals
+            document.addEventListener('keydown', (event) => {
+                if(event.key === "Escape") {
+                    closeAllModals();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

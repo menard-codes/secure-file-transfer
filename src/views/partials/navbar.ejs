@@ -1,0 +1,57 @@
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="container is-max-tablet">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/">
+         <img src="/logo.svg" alt="Secure File Transfer - LOGO" />
+      </a>
+  
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="nabar-menu">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+  
+    <div id="nabar-menu" class="navbar-menu">
+      <div class="navbar-start">
+        <a href="/help" class="navbar-item">
+          Help
+        </a>
+  
+        <a href="/about" class="navbar-item">
+          About
+        </a>
+      </div>
+  
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <a href="/files/upload" class="button is-info">
+            <span class="icon">
+              <i class="fa-solid fa-file-shield"></i>
+            </span>
+            <span>Secure File Share</span>
+          </a>
+          <a href="https://github.com/menard-codes/secure-file-transfer" target="_blank" class="button is-light">
+            <span class="icon">
+              <i class="fab fa-github"></i>
+            </span>
+            <span>GitHub</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+    // Navbar menu toggle
+    document.addEventListener('DOMContentLoaded', () => {
+        const navBurger = document.querySelector('.navbar-burger');
+        const navMenu = document.querySelector('.navbar-menu');
+        navBurger.addEventListener('click', () => {
+            navBurger.classList.toggle('is-active');
+            navMenu.classList.toggle('is-active');
+        });
+    })
+</script>
