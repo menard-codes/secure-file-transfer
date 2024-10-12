@@ -53,3 +53,13 @@ img {
         text-align: left;
     }
 }
+
+#about {
+    padding-block: 15rem;
+    background-color: hsl(225, 14%, 11%);
+}
+
+footer {
+    background-color: hsl(198, 100%, 7%);
+    padding: 2rem;
+}

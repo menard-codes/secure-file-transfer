@@ -79,7 +79,6 @@ const worker = new Worker('fileDelete', async (job: Job<FileDeleteJob>) => {
     const { fileId, shareId } = job.data;
 
     try {
-        // TODO: Verify that the expiration date on record === expiration on job data
         const deletedFile = await deleteFile(fileId);
         await prisma.$transaction(async (tx) => {
             const share = await tx.share.findUnique({
@@ -92,7 +91,6 @@ const worker = new Worker('fileDelete', async (job: Job<FileDeleteJob>) => {
                 });
             }
         });
-        // TODO: Logger
         console.log('DELETED', deletedFile);
     } catch (error) {
         console.error(error);
@@ -100,7 +98,6 @@ const worker = new Worker('fileDelete', async (job: Job<FileDeleteJob>) => {
 }, { connection });
 
 worker.on('failed', () => {
-    // TODO: Retry failed jobs
     console.error('Failed job');
 });
 

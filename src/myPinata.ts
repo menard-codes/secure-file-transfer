@@ -25,17 +25,6 @@ export async function getFileUrl(cid: string, expires=1800) {
         });
         return signedUrl;
     } catch (error) {
-        // TODO: Error handling
-        console.error(error);
-    }
-}
-
-export async function getFile(cid: string) {
-    try {
-        const file = await pinata.gateways.get(cid);
-        return file;
-    } catch (error) {
-        // TODO: Better error handling
         console.error(error);
     }
 }
