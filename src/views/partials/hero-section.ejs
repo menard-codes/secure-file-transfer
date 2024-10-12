@@ -1,0 +1,198 @@
+<style>
+    #hero-main-container {
+        position: relative;
+        height: fit-content;
+    }
+
+    #hero {
+        position: absolute;
+        width: 100%;
+        inset: 0;
+    }
+
+    #hero-body-container {
+        display: flex;
+        align-items: center;
+    }
+
+    #hero-body-container > .hero-body {
+        width: 100%;
+    }
+</style>
+
+<div id="hero-main-container">
+    <canvas id="particleCanvas"></canvas>
+
+    <section id="hero" class="hero is-large">
+        <div id="hero-body-container" class="container is-fullhd">
+            <div class="hero-body">
+                <h1 class="title is-1">
+                    Secure File Share
+                </h1>
+                <h2 class="subtitle">
+                    A free, open-source, and self-hosted file sharing solution
+                </h2>
+                <div class="buttons">
+                    <a id="cta" class="button is-info is-large animate__animated" href="/files/upload">
+                        <span class="icon">
+                            <i class="fa-solid fa-file-shield"></i>
+                        </span>
+                        <span>Start Sharing</span>
+                    </a>
+                    <a class="button is-light is-large" href="/help">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<script>
+    // animations
+    const btnAnimate = 'animate__pulse';
+    const cta = document.getElementById('cta');
+    cta.addEventListener('mouseover', () => {
+        console.log('a')
+        if (!cta.classList.contains(btnAnimate)) {
+            cta.classList.add(btnAnimate);
+        }
+    });
+    cta.addEventListener('mouseleave', () => {
+        cta.classList.remove(btnAnimate);
+    })
+    
+    // particles canvas
+    const navbar = document.querySelector('nav.navbar');
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height, navbarHeight;
+
+    function updateCanvasDimensions() {
+        navbarHeight = navbar.offsetHeight;
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight - navbarHeight;
+        canvas.style.top = navbarHeight + 'px';
+    }
+
+    updateCanvasDimensions();
+
+    const particlesArray = [];
+    const numberOfParticles = 200;
+    const maxDistance = 100;
+
+    let mouse = {
+        x: null,
+        y: null,
+        radius: 150
+    }
+
+    window.addEventListener('mousemove', function(event) {
+        mouse.x = event.x;
+        mouse.y = event.y - navbarHeight;
+    });
+
+    window.addEventListener('resize', function() {
+        updateCanvasDimensions();
+        particlesArray.length = 0; // Clear the array
+        init(); // Reinitialize particles
+    });
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.size = Math.random() * 2 + 1;
+            this.speedX = (Math.random() - 0.5) * 0.5;
+            this.speedY = (Math.random() - 0.5) * 0.5;
+            this.opacity = Math.random() * 0.5 + 0.5;
+        }
+
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+
+            if (this.x > width || this.x < 0) {
+                this.speedX = -this.speedX;
+            }
+            if (this.y > height || this.y < 0) {
+                this.speedY = -this.speedY;
+            }
+
+            // Check proximity to mouse
+            const dx = mouse.x - this.x;
+            const dy = mouse.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < mouse.radius) {
+                const forceDirectionX = dx / distance;
+                const forceDirectionY = dy / distance;
+                const maxForce = 0.5;
+                const force = (mouse.radius - distance) / mouse.radius;
+                const directionX = forceDirectionX * force * maxForce;
+                const directionY = forceDirectionY * force * maxForce;
+
+                this.x -= directionX;
+                this.y -= directionY;
+            }
+        }
+
+        draw() {
+            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+
+    function init() {
+        for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+
+            for (let j = i; j < particlesArray.length; j++) {
+                const dx = particlesArray[i].x - particlesArray[j].x;
+                const dy = particlesArray[i].y - particlesArray[j].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < maxDistance) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - distance/maxDistance) * 0.5})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                    ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+            }
+
+            // Connect particles to mouse
+            if (mouse.x !== null && mouse.y !== null) {
+                const dx = mouse.x - particlesArray[i].x;
+                const dy = mouse.y - particlesArray[i].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < mouse.radius) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - distance/mouse.radius) * 0.5})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    init();
+    animate();
+</script>

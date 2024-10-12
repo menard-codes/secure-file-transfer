@@ -1,11 +1,132 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <%- include('partials/head') %>
     <title>Secure File Transfer</title>
+
+    <link rel="stylesheet" href="/styles/home.css" />
+
+    <!-- Home page specific imports: -->
+     <!-- AOS (Animate On Scroll) -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Animate.style - animation library -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
 </head>
 <body>
     <%- include('partials/navbar') %>
-    <h1>Home Page</h1>
+
+    <%- include('partials/hero-section.ejs') %>
+
+    <section id="features" class="section">
+        <div class="container is-max-desktop">
+            <h2 class="title is-2 has-text-centered">Features</h2>
+            <div id="feature-cards" class="columns is-multiline">
+                <div class="column is-one-third" data-aos="fade-up" data-aos-delay="200">
+                    <div class="box">
+                        <div class="feature-header">
+                            <span class="icon feature-icon has-text-info">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <h3 class="title is-4">Secure Sharing</h3>
+                        </div>
+                        <p>Password-protected links ensure your files remain private.</p>
+                    </div>
+                </div>
+                <div class="column is-one-third" data-aos="fade-up" data-aos-delay="400">
+                    <div class="box">
+                        <div class="feature-header">
+                            <span class="icon feature-icon has-text-info">
+                                <i class="fa-solid fa-user-slash"></i>
+                            </span>
+                            <h3 class="title is-4">No need to Sign Up</h3>
+                        </div>
+                        <p>Just upload and share, no need to create an account.</p>
+                    </div>
+                </div>
+                <div class="column is-one-third" data-aos="fade-up" data-aos-delay="600">
+                    <div class="box">
+                        <div class="feature-header">
+                            <span class="icon feature-icon has-text-info">
+                                <i class="fa-solid fa-server"></i>
+                            </span>
+                            <h3 class="title is-4">Self Hosted</h3>
+                        </div>
+                        <p>You can self-host this app if you need full control over your file's privacy.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section id="how-it-works" class="section"">
+        <div class="container">
+            <h2 class="title is-2 has-text-centered">How It Works</h2>
+            <div class="steps">
+                <div class="step" data-aos="fade-right" data-aos-delay="300">
+                    <div>
+                        <img src="/landing-page/upload.svg" alt="Upload files" />
+                    </div>
+                    <div class="step-details">
+                        <h3 class="step-title is-size-3">
+                            <span class="icon">
+                                <i class="fa-solid fa-1"></i>
+                            </span>
+                            <span>Upload File</span>
+                        </h3>
+                        <p>Select the file you want to share securely.</p>
+                    </div>
+                </div>
+                <div class="step" data-aos="fade-left" data-aos-delay="500">
+                    <div>
+                        <img src="/landing-page/file-passphrase.svg" alt="Secure Files with Passphrase" />
+                    </div>
+                    <div class="step-details">
+                        <h3 class="step-title is-size-3">
+                            <span class="icon">
+                                <i class="fa-solid fa-2"></i>
+                            </span>
+                            <span>
+                                Set Password & Expiration
+                            </span>
+                        </h3>
+                        <p>Choose a strong password and set an expiration date for the link.</p>
+                    </div>
+                </div>
+                <div class="step" data-aos="fade-right" data-aos-delay="700">
+                    <div>
+                        <img src="/landing-page/share-link.svg" alt="Share Link" />
+                    </div>
+                    <div class="step-details">
+                        <h3 class="step-title is-size-3">
+                            <span class="icon">
+                                <i class="fa-solid fa-3"></i>
+                            </span>
+                            <span>Share Link</span>
+                        </h3>
+                        <p>Get a secure link to share with your intended recipient.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>
+                This is a <strong>Dev x Pinata</strong> hackathon project by <a href="https://dev.to/menard_codes" target="_blank">@menard_codes</a>
+                <br />
+                <small> =2024= </small>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        AOS.init();
+    </script>
 </body>
 </html>
