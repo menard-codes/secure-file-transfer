@@ -1,0 +1,55 @@
+img {
+    display: block;
+    width: 100%;
+}
+
+#features {
+    min-height: 50vh;
+    background-color: hsl(225, 14%, 11%);
+
+    display: grid;
+    grid-template-rows: 1fr;
+}
+
+#features > div.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#feature-cards .box {
+    height: 100%;
+}
+
+#feature-cards .feature-header {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+#how-it-works .steps {
+    display: grid;
+    gap: 6rem;
+    justify-content: center;
+}
+
+.steps .step {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    gap: 3rem;
+}
+
+.step .step-details {
+    text-align: center;
+}
+
+@media screen and (min-width: 720px) {
+    .steps .step {
+        grid-template-columns: auto 1fr;
+    }
+    
+    .steps .step .step-details {
+        text-align: left;
+    }
+}
