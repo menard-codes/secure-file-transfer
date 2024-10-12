@@ -99,7 +99,7 @@ export class ViewHandlers {
         res.json({
             data: {
                 redirect: fileUrl,
-                expiration: `Expires in ${urlExpiration / 60} minutes`
+                expiration: `Expires in ${urlExpiration / 60} minutes starting from viewing this file.`
             }
         });
         return;

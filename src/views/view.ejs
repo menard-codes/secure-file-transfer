@@ -16,9 +16,6 @@
         <section class="my-6">
             <h1 class="title is-spaced">View Shared File</h1>
             <p class="subtitle">Enter the passphrase to view the file.</p>
-            <div class="notification is-info is-light">
-                This will be valid until <strong><%= expiration %></strong>.
-            </div>
         </section>
 
         <div class="box" x-data="viewFileForm">
@@ -50,7 +47,7 @@
                     </a>
                     <p>
                         <em>
-                            *<span x-text="data.expiration"></span>.
+                            *<span x-text="data.expiration"></span>
                             Save the file before it expires and <strong>NEVER</strong> share the file link anywhere
                         </em>
                     </p>
