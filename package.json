@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
-    "build": "esbuild src/* --bundle --platform=node --outdir=dist --format=esm"
+    "build": "node build.js"
   },
   "keywords": [],
   "author": "",
