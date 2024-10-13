@@ -1,6 +1,6 @@
 import { ConnectionOptions, Queue, Worker, type Job } from "bullmq";
-import prisma from "./db";
-import { deleteFile } from "./myPinata";
+import prisma from "./db.ts";
+import { deleteFile } from "./myPinata.ts";
 import dotenv from "dotenv";
 
 dotenv.config();

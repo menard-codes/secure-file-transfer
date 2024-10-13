@@ -1,11 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
-import { filesRouter } from "./routes/files/route";
+import { filesRouter } from "./routes/files/route.ts";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { exec } from 'child_process';
 import util from 'util';
-import prisma from './db';
+import prisma from './db.ts';
 
 const execAsync = util.promisify(exec);
 

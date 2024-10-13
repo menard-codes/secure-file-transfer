@@ -1,8 +1,8 @@
 import { Router } from "express";
 import multer from "multer";
-import { UploadHandlers } from "./upload.handlers";
-import { ShareHandlers } from "./share.handlers";
-import { ViewHandlers } from "./view.handlers";
+import { UploadHandlers } from "./upload.handlers.ts";
+import { ShareHandlers } from "./share.handlers.ts";
+import { ViewHandlers } from "./view.handlers.ts";
 
 
 export const filesRouter = Router();
