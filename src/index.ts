@@ -60,6 +60,10 @@ async function startServer() {
     res.render('index');
   });
 
+  app.get('/about', (req, res) => {
+    res.render('about');
+  })
+
   // default 404 page where all 404 errors redirect to
   app.get('/404', (req, res) => {
     res.statusCode = 404;

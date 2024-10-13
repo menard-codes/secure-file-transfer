@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head.ejs') %>
+    <title>Secure File Transfer - About</title>
+
+    <style>
+        p {
+            text-indent: 1rem;
+            line-height: 2;
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/navbar.ejs') %>
+
+    <main class="container is-max-tablet p-3">
+        <div class="content pt-6">
+            <h1 class="has-text-centered my-6">About Secure File Transfer</h1>
+            <p>Secure File Transfer is an open-source project developed as part of the Dev x Pinata hackathon. It addresses a common need in our digital world: the secure sharing of sensitive files without relying on third-party services.</p>
+    
+            <h2>Project Overview</h2>
+            <p>This application provides a simple, self-hostable solution for secure file sharing. It allows users to upload files, generate password-protected links with custom expiration dates, and share these links with intended recipients.</p>
+    
+            <h2>Key Features</h2>
+            <ul>
+                <li>Generate secure, password-protected file share links</li>
+                <li>Set custom expiration dates for shared links</li>
+                <li>No user accounts or logins required</li>
+                <li>Files stored in Pinata cloud</li>
+                <li>Self-hostable</li>
+                <li>Free and open-source</li>
+                <li>Utilizes BullMQ with Redis for managing file and record deletion upon expiration</li>
+            </ul>
+    
+            <h2>How It Works</h2>
+            <ol>
+                <li>Users upload a file they want to share</li>
+                <li>They set a passphrase and expiration date</li>
+                <li>The app generates a secure share link</li>
+                <li>Users can send this link to their intended recipients (it's recommended to share the passphrase separately)</li>
+                <li>Files and records are automatically deleted upon expiration</li>
+            </ol>
+    
+            <h2>Technology Stack</h2>
+            <ul>
+                <li>Backend: Express.js with TypeScript</li>
+                <li>Frontend: EJS templates, Bulma CSS framework, Alpine.js</li>
+                <li>Database: SQLite with Prisma ORM</li>
+                <li>File Storage: Pinata cloud</li>
+                <li>Task Queue: BullMQ with Redis</li>
+            </ul>
+    
+            <h2>Open Source</h2>
+            <p>This project is open-source and available on GitHub. Contributions, bug reports, and feature requests are welcome from the community.</p>
+
+            <h2>Hackathon Project</h2>    
+            <p>Secure File Transfer was created as part of the Dev x Pinata hackathon, showcasing the potential of decentralized storage solutions in practical applications.</p>
+            <p>Thank you for your interest in Secure File Transfer. We hope this tool proves useful for your secure file sharing needs.</p>
+        </div>
+    </main>
+
+    <%- include('partials/footer.ejs') %>
+</body>
+</html>
