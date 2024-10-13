@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head.ejs') %>
+    <title>Secure File Transfer - About</title>
+
+    <style>
+        p {
+            text-indent: 1rem;
+            line-height: 2;
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/navbar.ejs') %>
+
+    <main class="container is-max-tablet p-3">
+        <div class="content pt-6">
+            <h1 class="has-text-centered my-6">Frequently Asked Questions (FAQ)</h1>
+          
+            <h2>General Questions</h2>
+          
+            <h3>What is Secure File Transfer?</h3>
+            <p>Secure File Transfer is an open-source, self-hostable file sharing solution that allows users to share files securely using password-protected, disposable links.</p>
+          
+            <h3>Do I need to create an account to use Secure File Transfer?</h3>
+            <p>No, Secure File Transfer doesn't require any sign-ups or logins. It's designed for simple, secure file sharing without the need for user accounts.</p>
+          
+            <h3>Is Secure File Transfer free to use?</h3>
+            <p>Yes, Secure File Transfer is free and open-source. You can self-host it or use a hosted version without any charges.</p>
+          
+            <h2>Usage</h2>
+          
+            <h3>How do I share a file?</h3>
+            <p>To share a file:</p>
+            <ol>
+              <li>Upload the file you want to share</li>
+              <li>Set a passphrase and expiration date</li>
+              <li>Click "Create Share Link"</li>
+              <li>Send the generated link to your intended recipient(s)</li>
+            </ol>
+          
+            <h3>How do I set an expiration date for my shared file?</h3>
+            <p>When uploading a file, you can set a custom expiration date. After this date, the file and its share link will be automatically deleted.</p>
+          
+            <h3>Is there a file size limit?</h3>
+            <p>File size limits may vary depending on your specific deployment and Pinata account settings. Please check with your system administrator for specific limits.</p>
+          
+            <h2>Security</h2>
+          
+            <h3>How secure is Secure File Transfer?</h3>
+            <p>Secure File Transfer uses password protection for share links. Passwords are hashed with bcrypt and only stores the hased password. The files are stored in Pinata's cloud storage. Files are automatically deleted upon expiration, enhancing security.</p>
+          
+            <h3>Can anyone access my files without the password?</h3>
+            <p>No, files can only be accessed with both the correct share link and the corresponding password.</p>
+            <p>However, the view file link coming from Pinata after you provided the passphrase is the sensitive link and SHOULDN'T BE SHARED TO ANYONE. But just like the generated share links, this Pinata link also expires</p>
+          
+            <h2>Technical</h2>
+          
+            <h3>Can I self-host Secure File Transfer?</h3>
+            <p>Yes, Secure File Transfer is designed to be self-hostable. You can deploy it on your own server or VPS.</p>
+          
+            <h3>What technologies does Secure File Transfer use?</h3>
+            <p>Secure File Transfer uses Express.js with TypeScript for the backend, EJS templates with Bulma CSS and Alpine.js for the frontend, SQLite with Prisma ORM for the database (but feel free to replace the database if you need to), and Pinata for file storage. It also uses BullMQ with Redis for managing background tasks.</p>
+          
+            <h2>Troubleshooting</h2>
+          
+            <h3>What should I do if I forget the password for a shared file?</h3>
+            <p>For security reasons, passwords cannot be recovered. If you forget a password, you'll need to create a new share link with a new password. The file and its records will be automatically deleted upon expiration.</p>
+          
+            <h3>What happens if I try to access a file after its expiration date?</h3>
+            <p>Once a file has expired, its share link will no longer work and you won't be able to access the file. The file and its associated data are automatically deleted from our system.</p>
+          </div>
+    </main>
+
+    <%- include('partials/footer.ejs') %>
+</body>
+</html>
