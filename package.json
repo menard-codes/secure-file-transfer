@@ -14,7 +14,6 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "5.20.0",
-    "@types/bcrypt": "^5.0.2",
     "bcrypt": "^5.1.1",
     "bullmq": "^5.15.0",
     "dotenv": "^16.4.5",
@@ -25,6 +24,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.7.4",
