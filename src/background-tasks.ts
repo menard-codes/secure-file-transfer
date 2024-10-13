@@ -1,4 +1,4 @@
-import { Queue, Worker, type Job } from "bullmq";
+import { ConnectionOptions, Queue, Worker, type Job } from "bullmq";
 import prisma from "./db";
 import { deleteFile } from "./myPinata";
 import dotenv from "dotenv";
@@ -10,9 +10,8 @@ interface FileDeleteJob {
     shareId: string;
 }
 
-const connection = {
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT || 6379)
+const connection: ConnectionOptions = {
+    url: process.env.REDIS_URL
 };
 
 const fileDeleteQueue = new Queue('fileDelete', { connection });
