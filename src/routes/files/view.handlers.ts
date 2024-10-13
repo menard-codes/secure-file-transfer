@@ -1,9 +1,9 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
-import { FileAccessRequestSchema } from "~/schemas";
-import { getFileUrl } from "~/myPinata";
-import { ErrorResponseTemplates } from "~/routes/response-templates";
-import { rescheduleFileDeletion } from "~/background-tasks";
+import { FileAccessRequestSchema } from "~/schemas.ts";
+import { getFileUrl } from "~/myPinata.ts";
+import { ErrorResponseTemplates } from "~/routes/response-templates.ts";
+import { rescheduleFileDeletion } from "~/background-tasks.ts";
 
 export class ViewHandlers {
     public static async GET(req: Request, res: Response) {

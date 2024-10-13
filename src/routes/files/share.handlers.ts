@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
-import { FileAccessRequestSchema } from "~/schemas";
-import { manuallyDeleteFile } from "~/background-tasks";
-import { ErrorResponseTemplates } from "~/routes/response-templates";
+import { FileAccessRequestSchema } from "~/schemas.ts";
+import { manuallyDeleteFile } from "~/background-tasks.ts";
+import { ErrorResponseTemplates } from "~/routes/response-templates.ts";
 
 export class ShareHandlers {
     public static async GET(req: Request, res: Response) {

@@ -1,11 +1,11 @@
 import type { Request, Response } from 'express';
 import bcrypt from "bcrypt";
-import { FileUploadSchema } from "~/schemas";
-import { getExpISOString } from "~/utils";
-import { SALT_ROUNDS } from "~/constants";
-import { scheduleFileDeletion } from "~/background-tasks";
-import { uploadFile } from "~/myPinata";
-import { ErrorResponseTemplates } from "~/routes/response-templates";
+import { FileUploadSchema } from "~/schemas.ts";
+import { getExpISOString } from "~/utils.ts";
+import { SALT_ROUNDS } from "~/constants.ts";
+import { scheduleFileDeletion } from "~/background-tasks.ts";
+import { uploadFile } from "~/myPinata.ts";
+import { ErrorResponseTemplates } from "~/routes/response-templates.ts";
 
 export class UploadHandlers {
     public static async GET(req: Request, res: Response) {
