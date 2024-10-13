@@ -1,4 +1,4 @@
-import { ExpirationEnum } from "./schemas";
+import { ExpirationEnum } from "./schemas.ts";
 
 export function getExpISOString(expStr: ExpirationEnum) {
     const now = new Date();

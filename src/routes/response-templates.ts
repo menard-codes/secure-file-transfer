@@ -7,7 +7,7 @@ import type {
     Created,
     NoContent,
     SeeOther
-} from "~/response.schema"
+} from "~/response.schema.ts"
 
 export class SuccessResponseTemplates {
     public static okResponseTemplate<T>(data: T): Ok<T> {
